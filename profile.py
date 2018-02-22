@@ -41,24 +41,20 @@ link = request.LAN("lan")
 # Generate the nodes
 for i in range(params.workerCount + 1):
     node = request.RawPC("node" + str(i))
-    node.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU14-64-STD"
+    node.disk_image = "urn:publicid:IDN+clemson.cloudlab.us+image+bdslab-PG0:HPCC-Baseline"
     iface = node.addInterface("if" + str(i))
     iface.component_id = "eth1"
     iface.addAddress(rspec.IPv4Address("192.168.1." + str(i + 1), "255.255.255.0"))
     link.addInterface(iface)
     
     node.addService(rspec.Execute(shell="/bin/sh",
-                                  command="sudo adduser --ingroup admin --disabled-password hpcc"))
+                                  command="sudo adduser --ingroup admin --disabled-password --gecos '' hpcc"))
     node.addService(rspec.Execute(shell="/bin/sh",
                                   command="sudo adduser hpcc sudo"))
     node.addService(rspec.Execute(shell="/bin/sh",
-                                  command="sudo apt-get update"))
+                                  command="sudo groupadd hpcc"))
     node.addService(rspec.Execute(shell="/bin/sh",
-                                  command="sudo wget http://cdn.hpccsystems.com/releases/CE-Candidate-5.2.2/bin/platform/hpccsystems-platform-community_5.2.2-1trusty_amd64.deb"))
-    node.addService(rspec.Execute(shell="/bin/sh",
-                                  command="sudo dpkg -i hpccsystems-platform-community_5.2.2-1trusty_amd64.deb"))
-    node.addService(rspec.Execute(shell="/bin/sh",
-                                  command="sudo apt-get -y -f install"))
+                                  command="sudo usermod -a -G hpcc hpcc"))
     getEnvFile = "sudo wget https://raw.githubusercontent.com/clemsonbds/hpccsystems/master/environments/" + str(params.workerCount) + ".xml -O /etc/HPCCSystems/environment.xml"
     node.addService(rspec.Execute(shell="/bin/sh",
                                   command=getEnvFile))
